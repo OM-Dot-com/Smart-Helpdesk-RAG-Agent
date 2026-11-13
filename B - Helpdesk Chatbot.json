@@ -1,0 +1,631 @@
+{
+  "name": "B - Helpdesk Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "118c6aab-60a1-4601-a385-77d9fc9a76a7",
+      "name": "When chat message received",
+      "webhookId": "7f6114b8-7038-475a-9ff8-074c4bb0bb91"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1ace4394-3798-4961-9e11-64ca327db253",
+              "name": "user",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "a44be057-f745-4a06-973f-67ba3e429103",
+              "name": "question",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "5dcd4325-9343-4f9e-9dde-6088d30c49be",
+              "name": "time",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b75399a5-2532-426c-b635-a242b37947ac",
+      "name": "Clean Input"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.question }}",
+                    "rightValue": "/\\b(problem|complaint|issue|not working)\\b/i",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "279343b8-96ee-4e72-9684-e85f663484cf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "complaint"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "69c18d09-6d7b-4668-82b2-469c56a63720",
+                    "leftValue": "={{ $json.question }}",
+                    "rightValue": "/^\\s*(hi|hello|hey)\\b/i",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "greeting"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "7e6d84be-1c05-4135-b43d-85159e11f2b0",
+      "name": "Route Message"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.question }}",
+        "options": {
+          "systemMessage": "You are a helpdesk assistant for Sunrise College. Answer ONLY using information from the knowledge base tool. Keep answers short and clear: one or two sentences, answering only what the user asked. Do not list unrelated fees or rules, and never mention a fee the user did not ask about.\nIf the question is about Sunrise College (for example fees, exams, hostel, library, timings, admissions, facilities) but the answer is not in the knowledge base, reply exactly: \"I don't know\".\nOnly if the question has nothing to do with Sunrise College (for example sports, news, movies, general knowledge), reply politely: \"Sorry, I can only help with Sunrise College questions.\"\nFor follow-up questions, use the earlier conversation to understand what \"it\", \"they\" or \"hostel students\" refers to, but still answer only the specific question."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        112
+      ],
+      "id": "fdfc1c62-6a7f-4c14-826a-0a5aec3c0a0e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "=models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        256
+      ],
+      "id": "77e4ccb1-d14c-4d5c-b0c6-9b8973d9fdda",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NxK3SeyVZI797vj1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this to look up Sunrise College fees, exam rules and hostel rules",
+        "memoryKey": {
+          "__rl": true,
+          "value": "helpdesk",
+          "mode": "id"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.4,
+      "position": [
+        896,
+        224
+      ],
+      "id": "274cfb0e-5a1d-4c3e-abe0-215b29908e4b",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        336
+      ],
+      "id": "84c3d5c9-4d81-4e9f-a82a-63733ab8d20f",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NxK3SeyVZI797vj1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=   {{ $('When chat message received').first().json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        688,
+        320
+      ],
+      "id": "cdaedc2b-7134-412a-8d53-931b0f129c8f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const answer = (item.json.output || '').trim();\n  const clean = answer.toLowerCase().replace(/\\u2019/g, \"'\");\n  return {\n    json: {\n      output: answer,\n      answer: answer,\n      answered: !clean.includes(\"i don't know\"),\n      type: 'question'\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        112
+      ],
+      "id": "a6194b70-bc49-4b28-83ef-4ead77710764",
+      "name": "Mark Answered"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "953153c3-a1e6-4798-a9e6-3630ab62a2b5",
+              "name": "output",
+              "value": "Hello! Welcome to the Sunrise College Helpdesk. Ask me about fees, exams or hostel rules.",
+              "type": "string"
+            },
+            {
+              "id": "96af0cda-6265-4ed2-a3f5-7a16e8e82861",
+              "name": "answer",
+              "value": "Hello! Welcome to the Sunrise College Helpdesk. Ask me about fees, exams or hostel rules.",
+              "type": "string"
+            },
+            {
+              "id": "1627423b-43bb-4c8d-baf4-da0d8d9adee5",
+              "name": "answered",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "7465cfa4-2af3-4325-aed6-281b6b605e14",
+              "name": "type",
+              "value": "greeting",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        704,
+        -16
+      ],
+      "id": "0c664826-1f6d-4e93-8534-b2a8d16ca732",
+      "name": "Welcome Reply"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2a38310c-9648-4d27-903e-01e34154598c",
+              "leftValue": "={{ $json.answered }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1264,
+        112
+      ],
+      "id": "f1df017f-8015-4bce-8195-62d30b6120f2",
+      "name": "Was Answered?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "PASTE_WEBHOOK_URL_HERE",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=Helpdesk alert: {{ $('Clean Input').first().json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1408,
+        176
+      ],
+      "id": "8f7f6ead-da9d-49c4-b64f-77960af2b1b1",
+      "name": "Send Alert"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "afc005a3-f07c-4453-9816-639965d9f4e7",
+              "name": "output",
+              "value": "Sorry to hear that. I have alerted our support team and they will contact you soon",
+              "type": "string"
+            },
+            {
+              "id": "83c3261f-59c5-47b7-9d4f-5742fc589e40",
+              "name": "answer",
+              "value": "Sorry to hear that. I have alerted our support team and they will contact you soon",
+              "type": "string"
+            },
+            {
+              "id": "57d3d7e6-e53a-48e8-b35f-59ad679c6fc7",
+              "name": "answered",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "5adacaab-f5c0-45ea-beb5-f6ce65e2cef5",
+              "name": "type",
+              "value": "complaint",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        -128
+      ],
+      "id": "8e10403b-3897-4ab5-bf81-7c6f0e024ae1",
+      "name": "Complaint Reply"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        944,
+        -32
+      ],
+      "id": "5c63a4b6-ec5f-43f1-a637-a7c57c199b6e",
+      "name": "Combine Record"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f600d14f-e202-4851-a078-14dc2a774b5c",
+              "name": "output",
+              "value": "={{ $('Combine Record').first().json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1632,
+        176
+      ],
+      "id": "2c8d6a01-c9de-4d6f-be90-158c9904c4ea",
+      "name": "Reply to User"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "IshuTJvHocife7JU",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/IshuTJvHocife7JU",
+          "cachedResultName": "My project — C - Log Chat to Sheet"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1168,
+        -32
+      ],
+      "id": "b05f79a9-17ae-4328-867e-92f703f47ca2",
+      "name": "Log Chat"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Clean Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Input": {
+      "main": [
+        [
+          {
+            "node": "Route Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Combine Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Message": {
+      "main": [
+        [
+          {
+            "node": "Complaint Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Welcome Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Mark Answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Answered": {
+      "main": [
+        [
+          {
+            "node": "Was Answered?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Combine Record",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Was Answered?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complaint Reply": {
+      "main": [
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Combine Record",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Welcome Reply": {
+      "main": [
+        [
+          {
+            "node": "Combine Record",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Record": {
+      "main": [
+        [
+          {
+            "node": "Log Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Alert": {
+      "main": [
+        [
+          {
+            "node": "Reply to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "SqlFOFrmFRVfNMbX",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "versionId": "ed91c2f8-7875-48b1-a9de-4d3403deee3d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "64efd8e089bac2b3a8b1b8773eb377fdac5837a56b5bb21f1c7ba66b4c86a46e"
+  },
+  "nodeGroups": [],
+  "id": "jgNFOU9Xj5jD6n99",
+  "tags": []
+}

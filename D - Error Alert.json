@@ -1,0 +1,67 @@
+{
+  "name": "D - Error Alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8fdce57d-44c9-4583-91fb-6a2b99fa5fc8",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "PASTE_WEBHOOK_URL_HERE",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=Helpdesk ERROR in {{ $json.workflow.name }}: {{ $json.execution.error.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        16
+      ],
+      "id": "e936a3a0-59b9-4008-b04a-fa4e03cec8dd",
+      "name": "Send Error Alert"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "b581359f-42f7-456c-a56b-f38f1e20d562",
+  "meta": {
+    "instanceId": "64efd8e089bac2b3a8b1b8773eb377fdac5837a56b5bb21f1c7ba66b4c86a46e"
+  },
+  "nodeGroups": [],
+  "id": "SqlFOFrmFRVfNMbX",
+  "tags": []
+}

@@ -1,0 +1,150 @@
+{
+  "name": "C - Log Chat to Sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cd7d7aa8-1a95-40cd-8c62-38c3f751b0d0",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XNPCZsosED6wP3nQN3Tz9wIyuQsM2lV6QRMoyPaDEQA",
+          "mode": "list",
+          "cachedResultName": "Helpdesk Chat Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XNPCZsosED6wP3nQN3Tz9wIyuQsM2lV6QRMoyPaDEQA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XNPCZsosED6wP3nQN3Tz9wIyuQsM2lV6QRMoyPaDEQA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $json.time }}",
+            "user": "={{ $json.user }}",
+            "question": "={{ $json.question }}",
+            "type": "={{ $json.type }}",
+            "answer": "={{ $json.answer }}",
+            "answered": "={{ $json.answered }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answer",
+              "displayName": "answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answered",
+              "displayName": "answered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "66bcf376-d800-4396-a58c-2b872126f0a9",
+      "name": "Save to Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cjToP6Sd9YAYhWNn",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "c86dc9ae-bbdb-4fcd-bee0-b955236a11d7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "64efd8e089bac2b3a8b1b8773eb377fdac5837a56b5bb21f1c7ba66b4c86a46e"
+  },
+  "nodeGroups": [],
+  "id": "IshuTJvHocife7JU",
+  "tags": []
+}
